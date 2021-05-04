@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>InfoMonitor</title>
+    <link rel="stylesheet" href="css/site.css" />
+</head>
+<body onload="addSection()">
+    <div id="toolbar">
+        <button onclick="fetchUpdate()">Refresh</button>
+        <button onclick="addSection()">Add</button>
+        <span id="status">Ready</span>
+    </div>
+    <div id="sectionContainer"></div>
+
+    <script src="/js/jquery/jquery.min.js"></script>
+    <script src="/js/linq.js/linq.min.js"></script>
+    <script>
+        let sections = [];
+        let sectionContainer = $('#sectionContainer');
+        let status = $('#status');
+        let refreshing = false;
+        let timer;
+
+        function addSection() {
+            let newId = sections.length.toString();
+            let newSection = `<div id="${newId}section"><div id="${newId}controls" style="width:100%;background-color:gray"><button onclick="removeSection(${newId})">X</button></div><textarea rows="5" cols="160" class="clear" id="${newId}linq">//Add your code here and return the result \r\nreturn serverData[0];</textarea><textarea rows="15" cols="160" class="clear" id="${newId}output"></textarea></div>`;
+            sections.push(newId);
+            sectionContainer.append(newSection);
+        }
+        function removeSection(sectionId) {
+            $(`#${sectionId}section`).remove();
+        }
+        function fetchUpdate() {
+            if (!refreshing) {
+                refreshing = true;
+
+                $.ajax({
+                    url: "api/Get"
+                }).done(function (data) {
+                    status.text(`Updated ${goodDate()}`);
+                    sections.forEach(function (item, index) {
+                        var userFunc = new Function('serverData', $(`#${item}linq`).val());
+                        $(`#${item}output`).val(JSON.stringify(userFunc(data)));
+                        userFunc = null;
+                    });
+                }).fail(function () {
+                    status.innerHTML = "Failed";
+                });
+            }
+            refreshing = false;
+        }
+        function goodDate() {
+            let now = new Date();
+            return now.getFullYear() + "-" + prependZero(now.getMonth()) + "-" + prependZero(now.getDay()) + " " + prependZero(now.getHours()) + ":" + prependZero(now.getMinutes()) + ":" + prependZero(now.getSeconds());
+        }
+        function prependZero(input) {
+            if (input < 10)
+                return "0" + input;
+            else
+                return input
+        }
+    </script>
+</body>
+</html>

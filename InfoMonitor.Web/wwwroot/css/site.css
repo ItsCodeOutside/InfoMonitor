@@ -1,0 +1,16 @@
+﻿html body {
+    margin: 2px;
+    padding: 0px;
+}
+
+#toolbar {
+    display: block;
+    clear: both;
+    padding: 5px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid black;
+}
+
+#status {
+    padding-left: 15px;
+}
