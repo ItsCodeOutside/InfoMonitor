@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 
 namespace InfoMonitor.Web
@@ -27,11 +28,11 @@ namespace InfoMonitor.Web
             if (string.IsNullOrEmpty(sourceId) || data == null)
                 return;
 
-            List<string> sources = _cache.Get("sources") as List<string>;
+            List<SourceItem> sources = _cache.Get("sources") as List<SourceItem>;
             if (sources == null)
             {
-                sources = new List<string>();
-                sources.Add(sourceId);
+                sources = new List<SourceItem>();
+                sources.Add(new SourceItem() { SourceId = sourceId });
                 _cache.Set("sources", sources);
             }
             //Overwrite anything that currently exists for this sourceId
@@ -41,15 +42,35 @@ namespace InfoMonitor.Web
         [HttpGet]
         public object Get()
         {
-            List<string> sources = _cache.Get("sources") as List<string>;
+            List<SourceItem> sources = _cache.Get("sources") as List<SourceItem>;
             List<object> dataList = new List<object>();
             if (sources != null)
             {
-                foreach (var sourceId in sources)
+                List<SourceItem> expiredSources = new List<SourceItem>();
+                foreach (var sourceItem in sources)
                 {
-                    var result = _cache.Get(sourceId);
+                    var result = _cache.Get(sourceItem.SourceId);
                     if (result != null)
-                        dataList.Add(result);
+                    {
+                        //Make a list of anything that has 'expired'
+                        if (DateTime.Now.Subtract(sourceItem.LastUpdate).TotalMinutes > 5)
+                        {
+                            expiredSources.Add(sourceItem);
+                        }
+                        else
+                            dataList.Add(result);
+                    }
+                }
+                //Remove the expired sources, if there are any
+                if (expiredSources.Count > 0)
+                {
+                    foreach (var sourceItem in expiredSources)
+                    { 
+                        sources.Remove(sourceItem);
+                        _cache.Remove(sourceItem.SourceId);
+                    }
+                    //Possible a just-added item could be hidden because of this
+                    _cache.Set("sources", sources);
                 }
             }
             return dataList;
