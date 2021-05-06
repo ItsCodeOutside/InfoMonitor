@@ -1,6 +1,8 @@
 # InfoMonitor
 This project provides an extremely simple dashboard for technical people to display and manipulate data from multiple sources. The concept is simple, the web site will accept JSON and cache it in memory then reply with that data. The front-end then allows you to use javscript to display it however you like.
 
+This is written to be as simple to read as possible so that non-programmers can still use and modify the dashboard (IE:/ support technicians, network engineers, managers - anyone technical but not codey)
+
 ## Dependencies
 * Web project
  * .Net Core 3.1

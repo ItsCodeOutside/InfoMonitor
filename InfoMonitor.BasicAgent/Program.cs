@@ -25,7 +25,7 @@ namespace InfoMonitor.BasicAgent
                 _updateDelayMs = 5000;
             }
 
-            //Do the actual gathering and reporting in a background thread
+            //Do the actual gathering and reporting in a separate thread.
             Thread reportingThread = new Thread(new ThreadStart(LoopIt));
             reportingThread.Start();
             Console.WriteLine("This example agent is intended for use on Windows");
