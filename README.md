@@ -5,12 +5,12 @@ This is written to be as simple to read as possible so that non-programmers can 
 
 ## Dependencies
 * Web project
- * .Net Core 3.1
- * [jquery](https://github.com/jquery/jquery) 
- * [linq.js](https://github.com/mihaifm/linq)
+  * .Net Core 3.1
+  * [jquery](https://github.com/jquery/jquery) 
+  * [linq.js](https://github.com/mihaifm/linq)
 * Console application (Example of agent)
- * Microsoft.Extensions.Configuration.Json
- * System.Management
+  * Microsoft.Extensions.Configuration.Json
+  * System.Management
 
 ## Getting Started
 1. Download reopsitory
