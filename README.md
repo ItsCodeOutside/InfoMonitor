@@ -24,3 +24,5 @@ The included BasicAgent uses Windows Management Instrumentation to gather machin
 
 ## Going Further
 The data gathering agent can be in any language, on any platform, and return any type of data. This can be used to build a dashboard on near-current activity to provide an overview of your estate and allows you to quickly drill down on any set of data.
+
+I found [wmie2](https://github.com/vinaypamnani/wmie2) to be useful when looking at Windows Management Instrumentation for certain information.

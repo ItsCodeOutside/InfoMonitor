@@ -52,7 +52,8 @@ namespace InfoMonitor.BasicAgent
                 {
                     Computer = ComputerInformation.Get(),
                     Processes = ProcessInformation.Get(),
-                    RDPUsers = RDPUserInformation.Get()
+                    RDPUsers = RDPUserInformation.Get(),
+                    NICs = NICInformation.Get()
                 };
 
 
