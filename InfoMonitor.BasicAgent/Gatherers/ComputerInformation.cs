@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Management;
+using InfoMonitor.DataSchema;
 
 namespace InfoMonitor.BasicAgent.Gatherers
 {
-    public static class CPUInformation
+    public static class ComputerInformation
     {
-        public static object Get()
+        public static ComputerProperties Get()
         {
             ManagementScope scope = new ManagementScope(@"\\.\root\cimv2");
             //CPU
@@ -22,8 +23,15 @@ namespace InfoMonitor.BasicAgent.Gatherers
                 totalCores += (uint)item["NumberOfLogicalProcessors"];
                 clockSpeeds.Add((uint)item["CurrentClockSpeed"]);
             }
-            
-            return new object[] { totalCores, Average(clockSpeeds) };
+
+            //return new object[] { totalCores, Average(clockSpeeds) };
+            return new ComputerProperties()
+            {
+                MachineName = Environment.MachineName,
+                AverageCurrentClockSpeed = Average(clockSpeeds),
+                TotalRAMMegabytes = RAMInformation.Get(),
+                TotalLogicalCPUCores = totalCores
+            };
         }
 
 

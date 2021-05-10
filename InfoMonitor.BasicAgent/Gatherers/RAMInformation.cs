@@ -8,7 +8,7 @@ namespace InfoMonitor.BasicAgent.Gatherers
 {
     public static class RAMInformation
     {
-        public static object Get()
+        public static ulong Get()
         {
             ManagementScope scope = new ManagementScope(@"\\.\root\cimv2");
             //Memory

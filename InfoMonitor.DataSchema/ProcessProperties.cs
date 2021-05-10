@@ -6,6 +6,6 @@
         public int SessionId { get; set; }
         public string Name { get; set; }
         public bool Responding { get; set; }
-        public ulong RAMBytes { get; set; }
+        public long RAMBytes { get; set; }
     }
 }
