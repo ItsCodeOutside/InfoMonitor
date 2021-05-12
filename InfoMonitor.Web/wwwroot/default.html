@@ -3,18 +3,21 @@
 <head>
     <meta charset="utf-8" />
     <title>InfoMonitor</title>
-    <link rel="stylesheet" href="css/site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" />
 </head>
 <body onload="addSection()">
-    <div id="toolbar">
-        <button onclick="fetchUpdate()">Refresh</button>
-        <button onclick="addSection()">Add</button>
-        <span id="status">Ready</span>
+    <div class="navbar navbar-expand-lg navbar-light bg-light" id="toolbar">
+        <div class="my-2 my-lg-0">
+            <button class="btn btn-outline-secondary" onclick="fetchUpdate()">Refresh</button>
+            <button class="btn btn-outline-secondary" onclick="addSection()">Add</button>
+            <span class="" id="status">Ready</span>
+        </div>
     </div>
-    <div id="sectionContainer"></div>
+    <div class="container" id="sectionContainer"></div>
 
-    <script src="/js/jquery/jquery.min.js"></script>
-    <script src="/js/linq.js/linq.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/linq@3.2.3/linq.min.js"></script>
     <script>
         let sections = [];
         let sectionContainer = $('#sectionContainer');
@@ -24,7 +27,7 @@
 
         function addSection() {
             let newId = sections.length.toString();
-            let newSection = `<div id="${newId}section"><div id="${newId}controls" style="width:100%;background-color:gray"><button onclick="removeSection(${newId})">X</button></div><textarea rows="5" cols="160" class="clear" id="${newId}linq">//Add your code here and return the result \r\nreturn serverData[0];</textarea><textarea rows="15" cols="160" class="clear" id="${newId}output"></textarea></div>`;
+            let newSection = `<div class="card" id="${newId}section"><div class="card-header text-end"><div id="${newId}controls"><button class="btn btn-outlne-danger" onclick="removeSection(${newId})">X</button></div><div class="card-body"><textarea class="form-control" id="${newId}linq">//Add your code here and return the result \r\nreturn serverData[0];</textarea><textarea class="form-control" id="${newId}output"></textarea></div></div>`;
             sections.push(newId);
             sectionContainer.append(newSection);
         }

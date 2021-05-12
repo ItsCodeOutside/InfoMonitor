@@ -29,7 +29,7 @@ namespace InfoMonitor.BasicAgent.Gatherers
             {
                 MachineName = Environment.MachineName,
                 AverageCurrentClockSpeed = Average(clockSpeeds),
-                TotalRAMMegabytes = RAMInformation.Get(),
+                TotalRAMbytes = RAMInformation.Get(),
                 TotalLogicalCPUCores = totalCores
             };
         }
