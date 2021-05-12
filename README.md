@@ -8,6 +8,7 @@ This is written to be as simple to read as possible so that non-programmers can 
   * .Net Core 3.1
   * [jquery](https://github.com/jquery/jquery) 
   * [linq.js](https://github.com/mihaifm/linq)
+  * [Bootstrap](https://github.com/twbs/bootstrap/)
 * Console application (Example of agent)
   * Microsoft.Extensions.Configuration.Json
   * System.Management
