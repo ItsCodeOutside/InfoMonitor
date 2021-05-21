@@ -32,10 +32,12 @@ namespace InfoMonitor.Web
             if (sources == null)
             {
                 sources = new List<SourceItem>();
-                sources.Add(new SourceItem() { SourceId = sourceId });
-                _cache.Set("sources", sources);
             }
+
+
             //Overwrite anything that currently exists for this sourceId
+            sources.Add(new SourceItem() { SourceId = sourceId });
+            _cache.Set("sources", sources);
             _cache.Set(sourceId, data);
         }
 
