@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 
@@ -8,12 +9,18 @@ namespace InfoMonitor.Web
     [Produces("application/json")]
     public class DataController : ControllerBase
     {
-        IMemoryCache _cache;
+        CachedDataManager _cachedData;
+        TimeSpan _cacheExpirationSeconds = new TimeSpan(0, 10, 0);
 
-        public DataController(IMemoryCache cache)
+        public DataController(IMemoryCache cache, IConfiguration config)
         {
             //Monitored data is stored only in memory. No persistent storage.
-            _cache = cache;
+            if (!cache.TryGetValue("data", out CachedDataManager cachedData))
+            {
+                cachedData = new CachedDataManager(cache);
+            }
+            _cachedData = cachedData;
+            _cacheExpirationSeconds = new TimeSpan(0, 0, config.GetValue<int>("AppSettings:CacheExpirationSeconds"));
         }
 
         /// <summary>
@@ -24,58 +31,14 @@ namespace InfoMonitor.Web
         [HttpPost]
         public void Set(string sourceId, [FromBody] object data)
         {
-            //ignore empties
-            if (string.IsNullOrEmpty(sourceId) || data == null)
-                return;
-
-            List<SourceItem> sources = _cache.Get("sources") as List<SourceItem>;
-            if (sources == null)
-            {
-                sources = new List<SourceItem>();
-            }
-
-
-            //Overwrite anything that currently exists for this sourceId
-            sources.Add(new SourceItem() { SourceId = sourceId });
-            _cache.Set("sources", sources);
-            _cache.Set(sourceId, data);
+            _cachedData.Set(sourceId, data);
         }
 
         [HttpGet]
-        public object Get()
+        public object GetAll()
         {
-            List<SourceItem> sources = _cache.Get("sources") as List<SourceItem>;
-            List<object> dataList = new List<object>();
-            if (sources != null)
-            {
-                List<SourceItem> expiredSources = new List<SourceItem>();
-                foreach (var sourceItem in sources)
-                {
-                    var result = _cache.Get(sourceItem.SourceId);
-                    if (result != null)
-                    {
-                        //Make a list of anything that has 'expired'
-                        if (DateTime.Now.Subtract(sourceItem.LastUpdate).TotalMinutes > 5)
-                        {
-                            expiredSources.Add(sourceItem);
-                        }
-                        else
-                            dataList.Add(result);
-                    }
-                }
-                //Remove the expired sources, if there are any
-                if (expiredSources.Count > 0)
-                {
-                    foreach (var sourceItem in expiredSources)
-                    { 
-                        sources.Remove(sourceItem);
-                        _cache.Remove(sourceItem.SourceId);
-                    }
-                    //Possible a just-added item could be hidden because of this
-                    _cache.Set("sources", sources);
-                }
-            }
-            return dataList;
+            _cachedData.ClearExpiredSources(_cacheExpirationSeconds);
+            return _cachedData.GetAll();
         }
     }
 }

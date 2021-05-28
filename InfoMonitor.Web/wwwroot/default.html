@@ -15,15 +15,6 @@
     </div>
     <div class="container" id="sectionContainer"></div>
 
-    <div id="tempTable"></div>
-
-
-    <input type="radio" class="btn-check" name="outputType" id="outputAsTable" autocomplete="off">
-    <label class="btn btn-outline-secondary" for="outputAsTable">Table</label>
-
-    <input type="radio" class="btn-check" name="outputType" id="outputAsText" autocomplete="off" checked>
-    <label class="btn btn-outline-secondary" for="outputAsText">Text</label>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/linq@3.2.3/linq.min.js"></script>
@@ -36,7 +27,7 @@
 
         function addSection() {
             let newId = sections.length.toString();
-            let newSection = `<div class="card" id="${newId}section"><div class="card-header text-end"><div id="${newId}controls"><button class="btn btn-outlne-danger" onclick="removeSection(${newId})">X</button></div><div class="card-body"><textarea class="form-control" id="${newId}linq">//Add your code here and return the result \r\nreturn toTable(serverData[0].Processes);</textarea><textarea class="form-control" id="${newId}output"></textarea></div></div>`;
+            let newSection = `<div class="card" id="${newId}section"><div class="card-header text-end"><div id="${newId}controls"><button class="btn btn-outlne-danger" onclick="removeSection(${newId})">X</button></div><div class="card-body"><textarea class="form-control" id="${newId}linq">//Add your code here and return the result \r\nreturn toTable(Enumerable.from(serverData[0].Processes).orderByDescending("$.RAMBytes").take(10).toArray());</textarea><div class="row" id="${newId}output"></div></div></div>`;
             sections.push(newId);
             sectionContainer.append(newSection);
         }
@@ -48,12 +39,17 @@
                 refreshing = true;
 
                 $.ajax({
-                    url: "api/Get"
+                    url: "api/GetAll"
                 }).done(function (data) {
                     status.text(`Updated ${goodDate()}`);
-                    sections.forEach(function (item, index) {
+                    sections.forEach(function (item) {
                         var userFunc = new Function('serverData', $(`#${item}linq`).val());
-                        $(`#${item}output`).val(JSON.stringify(userFunc(data)));
+                        let result = userFunc(data);
+                        if (result.startsWith && result.startsWith("<table>")) {
+                            $(`#${item}output`).empty().append($(result));
+                        }
+                        else
+                            $(`#${item}output`).empty().append($(`<textarea class="form-control"></textarea>`).val(JSON.stringify(result)));
                         userFunc = null;
                     });
                 }).fail(function () {
@@ -73,33 +69,44 @@
                 return input
         }
         function toTable(source) {
-            let keys = [];
             let output = "<table>";
-            if (Array.isArray(source)) {
-                console.log(source);
-                keys = Object.keys(source[0]); //columns of table
-                console.log(keys);
-                output += "<tr>";
-                for (let item of keys) {
-                    console.log(item);
-                    output += `<th>${item}</th>`;
-                }
-                output += "</tr>";
-
-                source.forEach(function (sourceItem) {
-                    output += "<tr>"
-                    for (let keyItem of keys) {
-                        if (sourceItem.hasOwnProperty(keyItem))
-                            output += `<td>${sourceItem[keyItem]}</td>`
+            try {
+                let keys = [];
+                if (Array.isArray(source)) {
+                    keys = Object.keys(source[0]); //columns of table
+                    output += "<tr>";
+                    for (let item of keys) {
+                        output += `<th>${item}</th>`;
                     }
                     output += "</tr>";
-                });
-                $('#tempTable').empty().append($(output));
+
+                    source.forEach(function (sourceItem) {
+                        output += "<tr>"
+                        for (let keyItem of keys) {
+                            if (sourceItem.hasOwnProperty(keyItem))
+                                output += `<td>${sourceItem[keyItem]}</td>`
+                        }
+                        output += "</tr>";
+                    });
+                }
+                else {
+                    keys = Object.keys(source);
+                    output += "<tr>";
+                    for (let item of keys) {
+                        output += `<th>${item}</th>`;
+                    }
+                    output += "</tr><tr>"
+                    for (let item of keys) {
+                        output += `<th>${source[item]}</th>`;
+                    }
+                    output += "</tr>"
+                }
             }
-            else {
-                keys = source.keys();
+            catch (ex) {
+                output += `<tr><td>${ex.message}</td></tr>`;
             }
-            return output + "</table>";
+            output += "</table>";
+            return output;
         }
     </script>
 </body>

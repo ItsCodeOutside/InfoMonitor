@@ -27,7 +27,7 @@ namespace InfoMonitor.Web
             {
                 //Routes need to be mapped manually
                 endpoints.MapControllerRoute("set", "api/set", new { controller = "Data", action = "Set" });
-                endpoints.MapControllerRoute("get", "api/get", new { controller = "Data", action = "Get" });
+                endpoints.MapControllerRoute("get", "api/getall", new { controller = "Data", action = "GetAll" });
 
             });
         }
