@@ -24,10 +24,15 @@ namespace InfoMonitor.BasicAgent
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             var appSettings = config.GetSection("AppSettings");
             _infoMonitorUrl = appSettings["InfoMonitorUrl"];
-            string updateDelaySeconds = appSettings["UpdateDelaySeconds"];
+            string updateDelaySeconds = appSettings["UpdateDelayMilliSeconds"];
             if (!int.TryParse(updateDelaySeconds, out _updateDelayMs))
             {
                 _updateDelayMs = 5000;
+            }
+            else
+            {
+                if (_updateDelayMs < 5000)
+                    _updateDelayMs = 5000;
             }
 
             //Do the actual gathering and reporting in a separate thread.
