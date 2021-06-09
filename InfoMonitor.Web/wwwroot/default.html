@@ -10,6 +10,8 @@
         <div class="my-2 my-lg-0">
             <button class="btn btn-outline-secondary" onclick="fetchUpdate()">Refresh</button>
             <button class="btn btn-outline-secondary" onclick="addSection()">Add</button>
+            <button class="btn btn-outline-secondary" onclick="addNotRespondingProcesses()">Show Not Responding</button>
+            <button class="btn btn-outline-secondary" onclick="addAllUsers()">Show RDP Users</button>
             <span class="" id="status">Ready</span>
         </div>
     </div>
@@ -19,20 +21,27 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/linq@3.2.3/linq.min.js"></script>
     <script>
+        let secId = 0;
         let sections = [];
         let sectionContainer = $('#sectionContainer');
         let status = $('#status');
         let refreshing = false;
         let timer;
 
-        function addSection() {
-            let newId = sections.length.toString();
-            let newSection = `<div class="card" id="${newId}section"><div class="card-header text-end"><div id="${newId}controls"><button class="btn btn-outlne-danger" onclick="removeSection(${newId})">X</button></div><div class="card-body"><textarea class="form-control" id="${newId}linq">//Add your code here and return the result \r\nreturn toTable(Enumerable.from(serverData[0].Processes).orderByDescending("$.RAMBytes").take(10).toArray());</textarea><div class="row" id="${newId}output"></div></div></div>`;
+        function addSection(sample) {
+            let newId = secId.toString();
+            if (typeof sample === 'undefined')
+                sample = `//Add your code here and return the result \r\nreturn toTable(Enumerable.from(serverData[0].Processes).orderByDescending("$.RAMBytes").take(10).toArray());`;
+            let newSection = `<div class="card" id="${newId}section"><div class="card-header text-end"><div id="${newId}controls"><button class="btn btn-outlne-danger" onclick="removeSection(${newId})">X</button></div><div class="card-body"><textarea class="form-control" id="${newId}linq">${sample}</textarea><div class="row" id="${newId}output"></div></div></div>`;
             sections.push(newId);
             sectionContainer.append(newSection);
+            secId++;
         }
         function removeSection(sectionId) {
             $(`#${sectionId}section`).remove();
+            sections = sections.filter(function (value) {
+                return value != sectionId;
+            });
         }
         function fetchUpdate() {
             if (!refreshing) {
@@ -45,7 +54,7 @@
                     sections.forEach(function (item) {
                         var userFunc = new Function('serverData', $(`#${item}linq`).val());
                         let result = userFunc(data);
-                        if (result.startsWith && result.startsWith("<table>")) {
+                        if (typeof result != 'undefined' && result.startsWith && result.startsWith("<table>")) {
                             $(`#${item}output`).empty().append($(result));
                         }
                         else
@@ -107,6 +116,40 @@
             }
             output += "</table>";
             return output;
+        }
+        function addNotRespondingProcesses() {
+            let sample = `let machines = [];
+Enumerable.from(serverData).forEach(function(infoObject) {
+let curMachine = Object();
+curMachine.Name = infoObject.Computer.MachineName;
+curMachine.nonResponsives = Enumerable.from(infoObject.Processes).where("$.Responding == false").toArray();
+machines.push(curMachine);
+});
+return toTable(Enumerable.from(machines).select(function(value) {
+ if (value.nonResponsives.length > 0)
+  return { Machine: value.Name, NotResponding: Enumerable.from(value.nonResponsives).first().Name };
+ else
+  return { Machine: value.Name, NotResponding: '-none-' };
+}).toArray());`;
+            addSection(sample);
+        }
+        function addAllUsers() {
+            let sample = `let machines = [];
+Enumerable.from(serverData).forEach(function(infoObject) {
+let curMachine = Object();
+curMachine.Name = infoObject.Computer.MachineName;
+curMachine.RDPUsers = Enumerable.from(infoObject.RDPUsers).select("$.Username").toArray();
+machines.push(curMachine);
+});
+return toTable(Enumerable.from(machines).select(function(value) {
+ if (value.RDPUsers.length > 0)
+ {
+  return { Machine: value.Name, RDPUsers: Enumerable.from(value.RDPUsers).orderBy().toArray().join("<br />") };
+ }
+ else
+  return { Machine: value.Name, RDPUsers: '-none-' };
+}).toArray());`;
+            addSection(sample);
         }
     </script>
 </body>
